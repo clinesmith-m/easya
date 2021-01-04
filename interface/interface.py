@@ -40,6 +40,7 @@ class Interface():
         pass
 
     def runAddIntent(self):
+        print("Type 'help' at any time for more information")
         intentName = input("What is the name of your new intent?\n")
         # I intend to clear the screen after every command to avoid overloading
         # the user with information. I'm saving the output of each command in
@@ -58,11 +59,23 @@ class Interface():
             command = input(prompt)
 
             if promptMode == "utterance":
-                if intent.checkUtterance(command) != "":
+                # Allowing the user to perform actions other than entering
+                # utterances
+                if len(intent.utterances) >= 1:
+                    if command == "q":
+                        break
+                    elif command == "undo":
+                        #FIXME
+                        pass
+
+                # Reading and processing the input
+                elif intent.checkUtterance(command) != "":
                     errorString = intent.checkUtterance(command)
                     output = errorString
                 else:
-                    output = "Looks good" #FIXME
+                    intent.addUtterance(command)
+                    output = "'{}'\n".format(command) + "Looks good."
+                    prompt = "Enter another utterance or enter 'q' to quit:\n"
 
     def runUpdateIntent(self):
         pass

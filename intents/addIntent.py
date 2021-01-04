@@ -10,6 +10,8 @@ class AddIntent():
         for char in string:
             if not char.isalnum() and \
                     char != " " and \
+                    char != "{" and \
+                    char != "}" and \
                     char != "." and \
                     char != "-" and \
                     char != "'":
@@ -50,3 +52,6 @@ class AddIntent():
                             "(e.g. editor-in-chief)"
 
         return ""
+
+    def addUtterance(self, utterance):
+        self.utterances.append(utterance)
