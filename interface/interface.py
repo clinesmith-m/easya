@@ -1,7 +1,7 @@
 import os
 import subprocess
 from sys import argv
-from intents.addIntent import AddIntent
+from intents.addIntent import Intent, Utterance, Slot
 
 class Interface():
     def __init__(self):
@@ -45,37 +45,48 @@ class Interface():
         # I intend to clear the screen after every command to avoid overloading
         # the user with information. I'm saving the output of each command in
         # this variable to be printed after the screen is cleared.
-        output = "The name of your intent is '{}'. ".format(intentName) + \
+        self.output = "The name of your intent is '{}'. ".format(intentName) + \
                 "Change it at any time by typing 'change intent name'."
 
-        intent = AddIntent(intentName)
-        prompt = "Please start by adding at least one sample utterance " + \
+        self.intent = AddIntent(intentName)
+        self.prompt = "Please start by adding at least one sample utterance " + \
             "(type 'rules' to learn more about how to write an utterance):\n"
-        promptMode = "utterance"
 
-        while(True):
+        promptMode = "utterance"
+        while promptMode != "quit":
             subprocess.run("clear")
-            print(output)
-            command = input(prompt)
+            print(self.output)
+            command = input(self.prompt)
 
             if promptMode == "utterance":
-                # Allowing the user to perform actions other than entering
-                # utterances
-                if len(intent.utterances) >= 1:
-                    if command == "q":
-                        break
-                    elif command == "undo":
-                        #FIXME
-                        pass
+                self.addUtterances(command)
+            if promptMode == "slot":
+                self.addSlots(command)
 
-                # Reading and processing the input
-                elif intent.checkUtterance(command) != "":
-                    errorString = intent.checkUtterance(command)
-                    output = errorString
-                else:
-                    intent.addUtterance(command)
-                    output = "'{}'\n".format(command) + "Looks good."
-                    prompt = "Enter another utterance or enter 'q' to quit:\n"
+    def addUtterances(self, command):
+        # Allowing the user to perform actions other than entering
+        # utterances
+        if len(intent.utterances) >= 1:
+            if command == "q":
+                promptMode = "slot"
+            elif command == "undo":
+                del(intent.utterances[-1])
+
+        # Reading and processing the input
+        elif intent.checkUtterance(command) != "":
+            errorString = intent.checkUtterance(command)
+            self.output = errorString
+        else:
+            intent.addUtterance(command)
+            self.output = "'{}'\n".format(command) + "Looks good."
+            self.prompt = \
+            "Enter another utterance or enter 'q' to start creating slots:\n"
+
+    # Creates an intuitive prompt/interface for the user to add slots to
+    # specific utternaces
+    def processUtterance(self, command):
+        self.intent.currUtterance.grabSlots()
+        
 
     def runUpdateIntent(self):
         pass

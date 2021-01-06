@@ -1,4 +1,4 @@
-class AddIntent():
+class Intent():
     def __init__(self, name):
         self.intentName = name
         self.utterances = []
@@ -53,5 +53,18 @@ class AddIntent():
 
         return ""
 
-    def addUtterance(self, utterance):
-        self.utterances.append(utterance)
+    def addUtterance(self, phrase):
+        newUtterance = Utterance(phrase)
+        self.utterances.append(newUtterance)
+
+class Utterance(Intent):
+    def __init__(self, phrase):
+        self.phrase = phrase
+        self.slots = []
+
+class Slot(Utterance):
+    def __init__(self, slotName):
+        self.name = slotName
+
+    def declareType(self, slotType):
+        self.slotType = slotType
