@@ -2,6 +2,7 @@ class Intent():
     def __init__(self, name):
         self.intentName = name
         self.utterances = []
+        self.currUtterance = None
 
     def changeIntentName(self, name):
         self.intentName = name
@@ -76,6 +77,19 @@ class Intent():
     def addUtterance(self, phrase):
         newUtterance = Utterance(phrase)
         self.utterances.append(newUtterance)
+
+    # Modifies member varibales and returns an error string/empty string
+    def setCurrUtterance(self, inputIndex):
+        try:
+            index = int(inputIndex)
+            if index < 0 or index >= len(self.utterances):
+                return "'" + inputIndex + "' is not a valid index number."
+            else:
+                self.currUtterance = self.utterances[index]
+                return ""
+        except:
+            return "'" + inputIndex + "' is not a valid index number."
+
 
 class Utterance(Intent):
     def __init__(self, phrase):
