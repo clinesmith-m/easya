@@ -51,7 +51,6 @@ class Interface():
         # this variable to be printed after the screen is cleared.
         self.output = "The name of your intent is '{}'. ".format(intentName) + \
                 "Change it at any time by typing 'change intent name'."
-        #TODO: Refactor this so that it actually kinda makes sense. THen test
         #TODO: It's testing time. Then make slots works
         self.intent = Intent(intentName)
         self.promptMode = "addUtterance"
@@ -59,33 +58,54 @@ class Interface():
         while self.promptMode != "quit":
             subprocess.run("clear")
             print(self.output)
-            self.setIntentsPrompt()
+            self.setIntentPrompt()
             command = input(self.prompt)
 
             if self.promptMode == "addUtterance":
-                self.addUtterances(command)
+                if len(self.intent.utterances) >= 1:
+                    if command == "q":
+                        self.promptMode = "chooseUtterance"
+                    elif command == "undo":
+                        del(intent.utterances[-1])
+                else:
+                    self.addUtterances(command)
+                    self.getIntentOutput()
+                    self.setIntentPrompt()
             elif self.promptMode == "chooseUtterance":
                 self.chooseUtterance(command)
+                self.getIntentOutput()
+                self.setIntentPrompt()
             elif self.promptMode == "slot":
                 self.prepCurrUtterance()
                 self.addSlots(command)
+                self.getIntentOutput()
+                self.setIntentPrompt()
 
-    def getIntentsOutput(self):
+    def getIntentOutput(self):
         if self.promptMode == "addUtterance":
             if self.errorMsg == "":
-                self.output = "'{}'\n".format(command) + "Looks good."
+                self.output = "'{}'\n".format(self.intent.utterances[-1]) \
+                                + "Looks good."
             else:
                 self.output = self.errorMsg
         elif self.promptMode == "chooseUtterance":
+            if self.errorMsg == "":
+                self.output = "Please pick one of the following utterances " + \
+                            "to add slots to it. (Or enter 'q' to skip this)\n"
+                for i in range(0, len(self.intent.utterances), 1):
+                    self.output += "{}. '{}'\n".format(i, self.intent.utterances[i])
+            else:
+                self.output = self.errorMsg
+        elif self.promptMode == "slots":
             if self.errorMsg == "":
                 self.output = "Selected utterance: {}".format(self.intent.currUtterance)
             else:
                 self.output = self.errorMsg
 
-    def setIntentsPrompts(self):
+    def setIntentPrompt(self):
         if self.promptMode == "addUtterance":
-            if len(self.intents.utterances) == 0:
-            self.prompt = "Please start by adding at least one sample " + \
+            if len(self.intent.utterances) == 0:
+                self.prompt = "Please start by adding at least one sample " + \
                 "utterance (type 'rules' to learn more about how to write an utterance):\n"
             else:
                 self.prompt = \
@@ -99,20 +119,13 @@ class Interface():
             
 
     def addUtterances(self, command):
-        # Allowing the user to perform actions other than entering
-        # utterances
-        if len(self.intent.utterances) >= 1:
-            if command == "q":
-                self.promptMode = "chooseUtterance"
-            elif command == "undo":
-                del(intent.utterances[-1])
-
         # Reading and processing the input
-        elif self.intent.checkUtterance(command) != "":
-            self.errorMsg = intent.checkUtterance(command)
+        if self.intent.checkUtterance(command) != "":
+            self.errorMsg = self.intent.checkUtterance(command)
         else:
             self.errorMsg = ""
             self.intent.addUtterance(command)
+            print(self.intent.utterances)
 
     # Allows the user to choose which utternacne they wish to modify
     def chooseUtterance(self, command):

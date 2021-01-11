@@ -32,7 +32,7 @@ class Intent():
                         "(i.e. 'five' rather than '5')."
 
         # Creating a variable to help with tracking curly brackets
-        openCurlyIndex = -1
+        openCurlyBrace = -1
         for i in range(0, len(phrase), 1):
             # Periods should only be used to denote the single letters of initials
             # Amazons example is n. b. a. Any other periods aren't allowed
@@ -57,14 +57,14 @@ class Intent():
             # Curly brackets must open and close before another set of curly
             # brackets starts
             elif phrase[i] == "}":
-                if openCurlyBracket != -1:
+                if openCurlyBrace == -1:
                     return "Closing bracket with no opening bracket"
                 # Resetting openCurlyBrace if this does close an opening
                 # curly brace
                 else:
-                    openCurlyBrace == -1
+                    openCurlyBrace = -1
             elif phrase[i] == "{":
-                if openCurlyBrace == -1:
+                if openCurlyBrace != -1:
                     return "Multiple opening brackets with no closing brackets"
                 else:
                     openCurlyBrace = i
@@ -94,7 +94,7 @@ class Intent():
 class Utterance(Intent):
     def __init__(self, phrase):
         self.phrase = phrase
-        self.slots = self.grabslots()
+        self.slots = self.grabSlots()
 
     def grabSlots(self):
         slots = []
@@ -102,7 +102,7 @@ class Utterance(Intent):
             if self.phrase[i] == "{":
                 beginSlot = i+1
                 while self.phrase[i] != "}":
-                    i += i
+                    i += 1
                 endSlot = i
                 newSlotName = self.phrase[beginSlot:endSlot]
                 newSlot = Slot(newSlotName)
