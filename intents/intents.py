@@ -124,3 +124,6 @@ class Slot(Utterance):
 
     def declareType(self, slotType):
         self.slotType = slotType
+
+    def __repr__(self):
+        return "{" + self.name + "}"
