@@ -90,6 +90,12 @@ class Intent():
         except:
             return "'" + inputIndex + "' is not a valid index number."
 
+    def grabIntentSlots(self):
+        allSlots = []
+        for utterance in self.utterances:
+            allSlots += utterance.grabSlots()
+        return allSlots
+
 
 class Utterance(Intent):
     def __init__(self, phrase):
@@ -109,6 +115,14 @@ class Utterance(Intent):
                 slots.append(newSlot)
 
         return slots
+
+    def findWord(self, inWord):
+        wordList = self.phrase.split(" ")
+        for word in wordList:
+            if inWord == word:
+                return ""
+
+        return "'{}' not found.".format(inWord)
 
     def replaceWord(self, word, slotName):
         substitute = "{" + slotName + "}"
