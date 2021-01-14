@@ -42,6 +42,7 @@ class Interface():
     def runAddIntent(self):
         # Initializing member variables. Python doesn't need this but I do
         self.errorMsg = ""
+        self.command = ""
         self.prevCommand = ""
 
 
@@ -93,7 +94,7 @@ class Interface():
                 self.getIntentOutput()
                 self.setIntentPrompt()
             elif self.promptType == "chooseSlotName":
-                self.replaceWordSlot()
+                self.replaceSlotWord()
 
                 self.getIntentOutput()
                 self.setIntentPrompt()
@@ -121,12 +122,14 @@ class Interface():
                 self.output = "Selected utterance: {}".format(self.intent.currUtterance)
             else:
                 self.output = self.errorMsg
-        elif self.promptMode == "chooseSlotName"
+        elif self.promptMode == "chooseSlotName":
             if self.errorMsg == "":
                 self.output = str(self.intent.currUtterance)
                 self.output.replace(self.command, "[Selected Word]", 1)
             else:
                 self.output = self.errorMsg
+        elif self.promptMode == "slotType":
+            self.output = "We're at slot types. Yay."
         else:
             self.output = "Under Construction"
 
@@ -142,13 +145,16 @@ class Interface():
             self.prompt = "Please enter an utterance number: "
         elif self.promptMode == "chooseSlotWord":
             slots = self.intent.currUtterance.grabSlots()
-            self.prompt = "Your current slots are " + str(slots) + "\n"\
-            "If you wish to add more, enter the word you want to replace.\n" +\
-            "(Enter 'q' if you are done adding slots.): "
+            self.prompt = "The current slots in the utterance are "\
+                + str(slots) + "\n"\
+                "If you wish to add more, enter the word you want to replace.\n" +\
+                "(Enter 'q' if you are done adding slots.): "
         elif self.promptMode == "chooseSlotName":
             intentSlots = self.intent.grabIntentSlots()
-            self.prompt = "Current intent slots are {}\n".format(str(intentSlots))\
-                            + "Enter the name of this slot: "
+            self.prompt = "Current slots you have in your intent are {}\n"\
+                .format(str(intentSlots)) + "Enter the name of this slot: "
+        elif self.promptMode == "slotType":
+            self.prompt = "Press enter to move on"
         else:
             self.prompt = "Under Construction"
             
@@ -159,20 +165,24 @@ class Interface():
             self.errorMsg = self.intent.checkUtterance()
         else:
             self.errorMsg = ""
-            self.intent.addUtterance()
+            self.intent.addUtterance(self.command)
 
     # Allows the user to choose which utternacne they wish to modify
     def chooseUtterance(self):
         self.errorMsg = self.intent.setCurrUtterance(self.command)
         if self.errorMsg == "":
-            self.promptMode = "slot"
+            self.promptMode = "chooseSlotWord"
 
     def chooseSlotWord(self):
         self.errorMsg = self.intent.currUtterance.findWord(self.command)
+        if self.errorMsg == "":
+            self.promptMode = "chooseSlotName"
 
-    def replaceWordSlot(self):
+    def replaceSlotWord(self):
         self.errorMsg = \
             self.intent.currUtterance.replaceWord(self.prevCommand, self.command)
+        if self.errorMsg == "":
+            self.promptMode = "slotType"
 
     def runUpdateIntent(self):
         pass
