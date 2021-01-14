@@ -124,10 +124,13 @@ class Utterance(Intent):
 
         return "'{}' not found.".format(inWord)
 
+    # This functions has no error handling because potential errors *should*
+    # already be checked before this is called. Fingers crossed.
     def replaceWord(self, word, slotName):
         substitute = "{" + slotName + "}"
-        self.phrase.replace(word, substitute)
+        self.phrase = self.phrase.replace(word, substitute)
         self.slots.append(slotName)
+        return ""
 
     def __repr__(self):
         return self.phrase

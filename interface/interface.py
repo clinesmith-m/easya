@@ -77,7 +77,7 @@ class Interface():
                 self.setIntentPrompt()
             elif self.promptMode == "chooseUtterance":
                 if self.command == "q":
-                    self.promptMode = "chooseSlotWord"
+                    self.promptMode = "slotType"
                 else:
                     self.chooseUtterance()
 
@@ -85,7 +85,7 @@ class Interface():
                 self.setIntentPrompt()
             elif self.promptMode == "chooseSlotWord":
                 if self.command == "q":
-                    self.promptMode = "slotType"
+                    self.promptMode = "chooseUtterance"
                 else:
                     self.chooseSlotWord()
                     if self.errorMsg == "":
@@ -125,7 +125,8 @@ class Interface():
         elif self.promptMode == "chooseSlotName":
             if self.errorMsg == "":
                 self.output = str(self.intent.currUtterance)
-                self.output.replace(self.command, "[Selected Word]", 1)
+                self.output = \
+                    self.output.replace(self.command, "[Selected Word]", 1)
             else:
                 self.output = self.errorMsg
         elif self.promptMode == "slotType":
@@ -137,7 +138,8 @@ class Interface():
         if self.promptMode == "addUtterance":
             if len(self.intent.utterances) == 0:
                 self.prompt = "Please start by adding at least one sample " + \
-                "utterance\n(type 'rules' to learn more about how to write an utterance):\n"
+                "utterance\n" +\
+                "(enter 'rules' to learn more about how to write an utterance):\n"
             else:
                 self.prompt = \
                 "Enter another utterance or enter 'q' to start creating slots:\n"
@@ -182,7 +184,7 @@ class Interface():
         self.errorMsg = \
             self.intent.currUtterance.replaceWord(self.prevCommand, self.command)
         if self.errorMsg == "":
-            self.promptMode = "slotType"
+            self.promptMode = "chooseSlotWord"
 
     def runUpdateIntent(self):
         pass
