@@ -93,7 +93,11 @@ class Intent():
     def grabIntentSlots(self):
         allSlots = []
         for utterance in self.utterances:
-            allSlots += utterance.grabSlots()
+            newSlots = utterance.grabSlots()
+            for slot in newSlots:
+                if slot not in allSlots:
+                    allSlots.append(slot)
+
         return allSlots
 
 
@@ -138,9 +142,10 @@ class Utterance(Intent):
 class Slot(Utterance):
     def __init__(self, slotName):
         self.name = slotName
+        self.type = None
 
     def declareType(self, slotType):
-        self.slotType = slotType
+        self.type = slotType
 
     def __repr__(self):
         return "{" + self.name + "}"
