@@ -73,34 +73,29 @@ class Interface():
                 else:
                     self.addUtterances()
 
-                self.getIntentOutput()
-                self.setIntentPrompt()
             elif self.promptMode == "chooseUtterance":
                 if self.command == "q":
                     self.promptMode = "slotType"
                 else:
                     self.chooseUtterance()
 
-                self.getIntentOutput()
-                self.setIntentPrompt()
             elif self.promptMode == "chooseSlotWord":
                 if self.command == "q":
                     self.promptMode = "chooseUtterance"
                 else:
                     self.chooseSlotWord()
                     if self.errorMsg == "":
-                        self.promptType = "chooseSlotName"
+                        self.promptMode = "chooseSlotName"
 
-                self.getIntentOutput()
-                self.setIntentPrompt()
-            elif self.promptType == "chooseSlotName":
+            elif self.promptMode == "chooseSlotName":
                 self.replaceSlotWord()
 
-                self.getIntentOutput()
-                self.setIntentPrompt()
             elif self.promptMode == "slotType":
                 self.promptMode = "quit"#FIXME: Implement slot typing.
                                         # Every slot needs a type.
+
+            self.getIntentOutput()
+ 
 
     def getIntentOutput(self):
         if self.promptMode == "addUtterance":
