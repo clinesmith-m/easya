@@ -42,8 +42,10 @@ class Interface():
     def runAddIntent(self):
         # Initializing member variables. Python doesn't need this but I do
         self.errorMsg = ""
+        self.helpMsg = ""
         self.command = ""
         self.prevCommand = ""
+        self.currSlot = None
 
 
         print("Type 'help' at any time for more information")
@@ -58,10 +60,14 @@ class Interface():
 
         while self.promptMode != "quit":
             subprocess.run("clear")
-            print(self.output)
+            if self.helpMsg != "":
+                print(self.helpMsg)
+            else:
+                print(self.output)
             self.setIntentPrompt()
             self.prevCommand = self.command
             self.command = input(self.prompt)
+            self.helpMsg = ""
 
             if self.promptMode == "addUtterance":
                 if self.command == "q":
@@ -91,8 +97,19 @@ class Interface():
                 self.replaceSlotWord()
 
             elif self.promptMode == "slotType":
-                self.promptMode = "quit"#FIXME: Implement slot typing.
-                                        # Every slot needs a type.
+                if self.currSlot != None and self.command == "custom":
+                    self.promptMode = "CustomSlotType"
+                elif self.command == "defaults":
+                    self.listSlotTypes()
+                else:
+                    self.addSlotTypes()
+            elif self.promptMode == "CustomSlotType":
+                #TODO: Implement this
+                break
+
+            else:
+                print("Mistakes were made")
+                break
 
             self.getIntentOutput()
  
@@ -125,7 +142,8 @@ class Interface():
             else:
                 self.output = self.errorMsg
         elif self.promptMode == "slotType":
-            self.output = "We're at slot types. Yay."
+            self.output = "(This will keep running until every slot has a type)\n"
+            self.output += "The current slot is [{}]".format(self.currSlot)
         else:
             self.output = "Under Construction"
 
@@ -151,7 +169,10 @@ class Interface():
             self.prompt = "Current slots you have in your intent are {}\n"\
                 .format(str(intentSlots)) + "Enter the name of this slot: "
         elif self.promptMode == "slotType":
-            self.prompt = "Press enter to move on"
+            self.prompt = \
+            "Please enter a built-in type for this slot or enter " +\
+            "'custom' to create a custom type.\n" +\
+            "(Enter 'defaults' to see a list of built-in slot types): "
         else:
             self.prompt = "Under Construction"
             
@@ -180,6 +201,25 @@ class Interface():
             self.intent.currUtterance.replaceWord(self.prevCommand, self.command)
         if self.errorMsg == "":
             self.promptMode = "chooseSlotWord"
+
+    # This is pretty bad computationally, but that shouldn't really matter and
+    # this does make the code cleaner... I think.
+    def addSlotTypes(self):
+        if self.currSlot == None:
+            intentSlots = self.intent.grabIntentSlots()
+            for slot in intentSlots:
+                if slot.type == None:
+                    self.currSlot = slot
+                    break
+            # If currSlot is still none, it's time to exit the program
+            if self.currSlot == None:
+                self.promptMode = "quit"
+        else:
+            self.currSlot.declareType(self.command)
+            self.currSlot = None
+
+    def listSlotTypes(self):
+        self.helpMsg = "Coming soon"
 
     def runUpdateIntent(self):
         pass

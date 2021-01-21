@@ -145,6 +145,7 @@ class Slot(Utterance):
         self.type = None
 
     def declareType(self, slotType):
+        # TODO: This needs to have error checking
         self.type = slotType
 
     def __repr__(self):
