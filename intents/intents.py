@@ -143,10 +143,47 @@ class Slot(Utterance):
     def __init__(self, slotName):
         self.name = slotName
         self.type = None
+        self.custom = False
 
-    def declareType(self, slotType):
-        # TODO: This needs to have error checking
-        self.type = slotType
+    def declareType(self, slotType, customObj=None):
+        if customObj == None:
+            self.type = slotType
+        else:
+            self.custom = True
+            self.type = customObj
 
     def __repr__(self):
         return "{" + self.name + "}"
+
+class CustomSlotType():
+    def __init__(self, name):
+        self.typeName = name
+        self.values = []
+
+    def addValue(self, val):
+        newVal = SlotValue(val)
+        for value in self.values:
+            if newVal.value == value.value:
+                return "'{}' is already a value for SlotType '{}'"\
+                        .format(newVal.value).format(self.typeName)
+
+        self.values.append(newVal)
+        return ""
+
+    def addSynonym(self, origVal, syn):
+        for value in self.values:
+            if origVal == value.value:
+                value.addSynonym(syn)
+
+class SlotValue():
+    def __init__(self, val):
+        self.value = val
+        self.synonyms = []
+
+    def addSynonym(self, syn):
+        if syn not in self.synonyms:
+            self.synonyms.append(syn)
+            return ""
+        else:
+            return "'{}' is already a synonym of '{}'.".format(syn)\
+                                                        .format(self.value)

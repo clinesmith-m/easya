@@ -40,12 +40,14 @@ class Interface():
         pass
 
     def runAddIntent(self):
-        # Initializing member variables. Python doesn't need this but I do
+        # Initializing member variables.
         self.errorMsg = ""
         self.helpMsg = ""
         self.command = ""
         self.prevCommand = ""
         self.currSlot = None
+        self.createAmazonSlotTypes()
+        self.customSlotTypes = []
 
 
         print("Type 'help' at any time for more information")
@@ -81,7 +83,8 @@ class Interface():
 
             elif self.promptMode == "chooseUtterance":
                 if self.command == "q":
-                    self.promptMode = "slotType"
+                    self.promptMode = "defaultSlotType"
+                    self.setCurrSlot()
                 else:
                     self.chooseUtterance()
 
@@ -96,8 +99,8 @@ class Interface():
             elif self.promptMode == "chooseSlotName":
                 self.replaceSlotWord()
 
-            elif self.promptMode == "slotType":
-                if self.currSlot != None and self.command == "custom":
+            elif self.promptMode == "defaultSlotType":
+                if self.command == "custom":
                     self.promptMode = "CustomSlotType"
                 elif self.command == "defaults":
                     self.listSlotTypes()
@@ -105,6 +108,7 @@ class Interface():
                     self.addSlotTypes()
             elif self.promptMode == "CustomSlotType":
                 #TODO: Implement this
+                #TODO: The interface has track the list of custom slot types
                 break
 
             else:
@@ -141,7 +145,7 @@ class Interface():
                     self.output.replace(self.command, "[Selected Word]", 1)
             else:
                 self.output = self.errorMsg
-        elif self.promptMode == "slotType":
+        elif self.promptMode == "defaultSlotType":
             self.output = "(This will keep running until every slot has a type)\n"
             self.output += "The current slot is [{}]".format(self.currSlot)
         else:
@@ -168,7 +172,7 @@ class Interface():
             intentSlots = self.intent.grabIntentSlots()
             self.prompt = "Current slots you have in your intent are {}\n"\
                 .format(str(intentSlots)) + "Enter the name of this slot: "
-        elif self.promptMode == "slotType":
+        elif self.promptMode == "defaultSlotType":
             self.prompt = \
             "Please enter a built-in type for this slot or enter " +\
             "'custom' to create a custom type.\n" +\
@@ -202,24 +206,37 @@ class Interface():
         if self.errorMsg == "":
             self.promptMode = "chooseSlotWord"
 
-    # This is pretty bad computationally, but that shouldn't really matter and
-    # this does make the code cleaner... I think.
-    def addSlotTypes(self):
+    def setCurrSlot(self):
+        intentSlots = self.intent.grabIntentSlots()
+        for slot in intentSlots:
+            if slot.type == None:
+                self.currSlot = slot
+                break
+        # If currSlot is still none, it's time to exit the program
         if self.currSlot == None:
-            intentSlots = self.intent.grabIntentSlots()
-            for slot in intentSlots:
-                if slot.type == None:
-                    self.currSlot = slot
-                    break
-            # If currSlot is still none, it's time to exit the program
-            if self.currSlot == None:
-                self.promptMode = "quit"
+            self.promptMode = "quit"
+
+    def addSlotTypes(self):
+        if self.promptMode == "defaultSlotType":
+            if self.command in self.defaultSlotTypes:
+                self.currSlot.declareType(self.command)
+                self.setCurrSlot()
+            else:
+                self.errorMsg = "'{}' is not a valid default slot type."\
+                                    .format(self.command)
         else:
             self.currSlot.declareType(self.command)
-            self.currSlot = None
+            self.setCurrSlot()
 
     def listSlotTypes(self):
         self.helpMsg = "Coming soon"
+
+    def createAmazonSlotTypes(self):
+        #TODO: add the actual types
+
+        # Writing it this way to make it easier to add Amazon slot types as I
+        # find out about them
+        self.defaultSlotTypes = []
 
     def runUpdateIntent(self):
         pass
