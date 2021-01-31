@@ -1,5 +1,6 @@
 import os
 import subprocess
+import re
 from sys import argv
 from intents.intents import Intent, Utterance, Slot
 
@@ -8,6 +9,7 @@ class Interface():
         self.commands = [
             "compile", "init", "add-intent", "update-intent", "help"
             ]
+
 
     def run(self):
         # Erroring if no commands are passed
@@ -39,6 +41,7 @@ class Interface():
     def runInit(self):
         pass
 
+
     def runAddIntent(self):
         # Initializing member variables.
         self.errorMsg = ""
@@ -46,8 +49,9 @@ class Interface():
         self.command = ""
         self.prevCommand = ""
         self.currSlot = None
-        self.createAmazonSlotTypes()
+        self.activeSlotTypes = self.createAmazonSlotTypes()
         self.customSlotTypes = []
+        self.currTypeIndex = -1
 
 
         print("Type 'help' at any time for more information")
@@ -101,15 +105,29 @@ class Interface():
 
             elif self.promptMode == "defaultSlotType":
                 if self.command == "custom":
-                    self.promptMode = "CustomSlotType"
+                    self.promptMode = "nameCustomType"
                 elif self.command == "defaults":
                     self.listSlotTypes()
                 else:
-                    self.addSlotTypes()
-            elif self.promptMode == "CustomSlotType":
-                #TODO: Implement this
-                #TODO: The interface has track the list of custom slot types
-                break
+                    self.addDefaultType()
+
+            elif self.promptMode == "nameCustomType":
+                self.addTypeName()
+
+            elif self.promptMode == "enterVals":
+                if self.command == "syn":
+                    self.promptMode = "enterSyn"
+                elif self.command == "q":
+                    self.promptMode = "defaultSlotType"
+                else:
+                    self.enterSlotVal()
+
+            elif self.promptMode == "enterSyn":
+                if self.command == "q":
+                    self.promptMode = "enterVals"
+                else:
+                    valIndex = len(self.customSlotTypes[self.currTypeIndex].values)-1
+                    enterSlotValSyn(valIndex)
 
             else:
                 print("Mistakes were made")
@@ -125,6 +143,7 @@ class Interface():
                                 + "Looks good."
             else:
                 self.output = self.errorMsg
+
         elif self.promptMode == "chooseUtterance":
             if self.errorMsg == "":
                 self.output = "Please pick one of the following utterances " + \
@@ -133,11 +152,13 @@ class Interface():
                     self.output += "{}. '{}'\n".format(i, self.intent.utterances[i])
             else:
                 self.output = self.errorMsg
+
         elif self.promptMode == "chooseSlotWord":
             if self.errorMsg == "":
                 self.output = "Selected utterance: {}".format(self.intent.currUtterance)
             else:
                 self.output = self.errorMsg
+
         elif self.promptMode == "chooseSlotName":
             if self.errorMsg == "":
                 self.output = str(self.intent.currUtterance)
@@ -145,11 +166,34 @@ class Interface():
                     self.output.replace(self.command, "[Selected Word]", 1)
             else:
                 self.output = self.errorMsg
+
         elif self.promptMode == "defaultSlotType":
             self.output = "(This will keep running until every slot has a type)\n"
             self.output += "The current slot is [{}]".format(self.currSlot)
+
+        elif self.promptMode == "nameCustomType":
+            self.output = "Creating a custom slot type..."
+
+        elif self.promptMode == "enterVals":
+            self.output = \
+                "Please enter the potential values for this slot type\n"
+            if len(self.customSlotTypes[self.currTypeIndex].values) == 0:
+                self.output += \
+                "(e.g. An ACTIVITIES slot type could have values like camping,\n"\
+                + "biking and skiing.)"
+            else:
+                self.output += "Current values for type '{}' are: [{}]"\
+                    .format(self.customSlotTypes[self.currTypeIndex].typeName)\
+                    .format(self.customSlotTypes[self.currTypeIndex].values)
+
+
+        elif self.promptMode == "enterSyn":
+            self.output = "Entering synonym for '{}'"\
+            .format(self.customSlotTypes[self.currTypeIndex].values[-1].value)
+
         else:
             self.output = "Under Construction"
+
 
     def setIntentPrompt(self):
         if self.promptMode == "addUtterance":
@@ -160,26 +204,43 @@ class Interface():
             else:
                 self.prompt = \
                 "Enter another utterance or enter 'q' to start creating slots:\n"
+
         elif self.promptMode == "chooseUtterance":
             self.prompt = "Please enter an utterance number: "
+
         elif self.promptMode == "chooseSlotWord":
             slots = self.intent.currUtterance.grabSlots()
             self.prompt = "The current slots in the utterance are "\
                 + str(slots) + "\n"\
                 "If you wish to add more, enter the word you want to replace.\n" +\
                 "(Enter 'q' if you are done adding slots.): "
+
         elif self.promptMode == "chooseSlotName":
             intentSlots = self.intent.grabIntentSlots()
             self.prompt = "Current slots you have in your intent are {}\n"\
                 .format(str(intentSlots)) + "Enter the name of this slot: "
+
         elif self.promptMode == "defaultSlotType":
             self.prompt = \
             "Please enter a built-in type for this slot or enter " +\
             "'custom' to create a custom type.\n" +\
             "(Enter 'defaults' to see a list of built-in slot types): "
+
+        elif self.promptMode == "nameCustomType":
+            self.prompt = "Please enter a name for your custom type: "
+
+        elif self.promptMode == "enterVals":
+            self.prompt = \
+            "Enter a new value (enter 'syn' to add a synonym to the previous\n"\
+            + "value or 'q' to quit): "
+
+        elif self.promptMode == "enterSyn":
+            self.prompt = "(Enter 'q' to cancel this): "
+
         else:
             self.prompt = "Under Construction"
             
+
 
     def addUtterances(self):
         # Reading and processing the input
@@ -189,22 +250,26 @@ class Interface():
             self.errorMsg = ""
             self.intent.addUtterance(self.command)
 
+
     # Allows the user to choose which utternacne they wish to modify
     def chooseUtterance(self):
         self.errorMsg = self.intent.setCurrUtterance(self.command)
         if self.errorMsg == "":
             self.promptMode = "chooseSlotWord"
 
+
     def chooseSlotWord(self):
         self.errorMsg = self.intent.currUtterance.findWord(self.command)
         if self.errorMsg == "":
             self.promptMode = "chooseSlotName"
+
 
     def replaceSlotWord(self):
         self.errorMsg = \
             self.intent.currUtterance.replaceWord(self.prevCommand, self.command)
         if self.errorMsg == "":
             self.promptMode = "chooseSlotWord"
+
 
     def setCurrSlot(self):
         intentSlots = self.intent.grabIntentSlots()
@@ -216,9 +281,11 @@ class Interface():
         if self.currSlot == None:
             self.promptMode = "quit"
 
-    def addSlotTypes(self):
+
+    def addDefaultType(self):
         if self.promptMode == "defaultSlotType":
-            if self.command in self.defaultSlotTypes:
+            if self.command in self.defaultSlotTypes \
+                            or self.command in self.customSlotTypes:
                 self.currSlot.declareType(self.command)
                 self.setCurrSlot()
             else:
@@ -228,21 +295,58 @@ class Interface():
             self.currSlot.declareType(self.command)
             self.setCurrSlot()
 
+
+    def addTypeName(self):
+        # I don't like doing error handling in the interface, but I'd rather do
+        # it here than in the constructor for now
+        if not re.match(r'^[A-Za-z_]+$', self.command):
+            self.errorMsg = \
+                "Slot type names must only contain letters and underscores"
+            return
+
+        newType = CustomSlotType(self.command)
+        self.customSlotTypes.append(newType)
+        self.currTypeIndex = len(self.customSlotTypes) - 1
+        self.errorMsg = ""
+        self.promptMode = "enterVals"
+
+
     def listSlotTypes(self):
         self.helpMsg = "Coming soon"
+
+
+    def enterSlotVal(self):
+        currType = self.customSlotTypes[self.currTypeIndex]
+        errorMsg = currType.checkVal(self.command)
+        if errorMsg != "":
+            return
+
+        newVal = SlotValue(self.command)
+        currType.addValue(newVal)
+        self.customSlotTypes[self.currTypeIndex] = currType
+
+
+    def enterSlotValSyn(self, index):
+        currVal = self.customSlotTypes[self.currTypeIndex].values[index]
+        errorMsg = currVal.addSynonym(self.command)
+
 
     def createAmazonSlotTypes(self):
         #TODO: add the actual types
 
         # Writing it this way to make it easier to add Amazon slot types as I
         # find out about them
-        self.defaultSlotTypes = []
+        defaultSlotTypes = []
+        return defaultSlotTypes
+
 
     def runUpdateIntent(self):
         pass
 
+
     def help(self):
         print("help doesn't need other objects, so it can just happen here")
+
 
     def printUsage(self):
         print("-"*35 + "  Usage:  " + "-"*35)

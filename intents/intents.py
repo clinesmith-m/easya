@@ -170,6 +170,11 @@ class CustomSlotType():
         self.values.append(newVal)
         return ""
 
+    # Have to do this error checking here so that I don't have to 
+    def checkVal(self, val):
+        #TODO: Implement this
+        return ""
+        
     def addSynonym(self, origVal, syn):
         for value in self.values:
             if origVal == value.value:
@@ -187,3 +192,10 @@ class SlotValue():
         else:
             return "'{}' is already a synonym of '{}'.".format(syn)\
                                                         .format(self.value)
+
+    def __repr__(self):
+        if len(self.synonyms) == 0:
+            return self.value
+        else:
+            return "value='{}', synonyms='{}'".format(self.value)\
+                                            .format(self.synonyms)
