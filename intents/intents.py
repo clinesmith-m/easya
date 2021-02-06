@@ -160,8 +160,7 @@ class CustomSlotType():
         self.typeName = name
         self.values = []
 
-    def addValue(self, val):
-        newVal = SlotValue(val)
+    def addValue(self, newVal):
         for value in self.values:
             if newVal.value == value.value:
                 return "'{}' is already a value for SlotType '{}'"\
@@ -180,6 +179,10 @@ class CustomSlotType():
             if origVal == value.value:
                 value.addSynonym(syn)
 
+    def __repr__(self):
+        return "Name='" + self.typeName + "', values=" + str(self.values)
+
+
 class SlotValue():
     def __init__(self, val):
         self.value = val
@@ -197,5 +200,6 @@ class SlotValue():
         if len(self.synonyms) == 0:
             return self.value
         else:
-            return "value='{}', synonyms='{}'".format(self.value)\
-                                            .format(self.synonyms)
+            return "value='" + self.value + "', synonyms=" + str(self.synonyms)
+#            return "value='{}', synonyms='{}'".format(self.value)\
+#                                            .format(self.synonyms)

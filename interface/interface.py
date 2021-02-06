@@ -2,7 +2,7 @@ import os
 import subprocess
 import re
 from sys import argv
-from intents.intents import Intent, Utterance, Slot
+from intents.intents import Intent, Utterance, Slot, CustomSlotType, SlotValue
 
 class Interface():
     def __init__(self):
@@ -103,6 +103,7 @@ class Interface():
             elif self.promptMode == "chooseSlotName":
                 self.replaceSlotWord()
 
+            #FIXME: This doesn't advance to the next slot... ever.
             elif self.promptMode == "defaultSlotType":
                 if self.command == "custom":
                     self.promptMode = "nameCustomType"
@@ -182,9 +183,14 @@ class Interface():
                 "(e.g. An ACTIVITIES slot type could have values like camping,\n"\
                 + "biking and skiing.)"
             else:
+                valString = ""
+                for val in self.customSlotTypes[self.currTypeIndex].values:
+                    valString += val.value + " ,"
+                valString = valString.strip(" ,")
+
                 self.output += "Current values for type '{}' are: [{}]"\
-                    .format(self.customSlotTypes[self.currTypeIndex].typeName)\
-                    .format(self.customSlotTypes[self.currTypeIndex].values)
+                    .format(self.customSlotTypes[self.currTypeIndex].typeName,\
+                    valString)
 
 
         elif self.promptMode == "enterSyn":
@@ -284,7 +290,7 @@ class Interface():
 
     def addDefaultType(self):
         if self.promptMode == "defaultSlotType":
-            if self.command in self.defaultSlotTypes \
+            if self.command in self.activeSlotTypes \
                             or self.command in self.customSlotTypes:
                 self.currSlot.declareType(self.command)
                 self.setCurrSlot()
