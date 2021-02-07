@@ -104,10 +104,10 @@ class Intent():
 class Utterance(Intent):
     def __init__(self, phrase):
         self.phrase = phrase
-        self.slots = self.grabSlots()
+        self.initSlots()
 
-    def grabSlots(self):
-        slots = []
+    def initSlots(self):
+        self.slots = []
         for i in range(0, len(self.phrase), 1):
             if self.phrase[i] == "{":
                 beginSlot = i+1
@@ -116,9 +116,10 @@ class Utterance(Intent):
                 endSlot = i
                 newSlotName = self.phrase[beginSlot:endSlot]
                 newSlot = Slot(newSlotName)
-                slots.append(newSlot)
+                self.slots.append(newSlot)
 
-        return slots
+    def grabSlots(self):
+        return self.slots
 
     def findWord(self, inWord):
         wordList = self.phrase.split(" ")
@@ -128,12 +129,18 @@ class Utterance(Intent):
 
         return "'{}' not found.".format(inWord)
 
-    # This functions has no error handling because potential errors *should*
+    # This functions has limited error handling because potential errors *should*
     # already be checked before this is called. Fingers crossed.
     def replaceWord(self, word, slotName):
         substitute = "{" + slotName + "}"
         self.phrase = self.phrase.replace(word, substitute)
-        self.slots.append(slotName)
+        # Erroring if the utterance already has a slot of the same name
+        for slot in self.slots:
+            if slot.name == slotName:
+                return "Utterance already contains an entry for slot '{}'"\
+                        .format(slotName)
+        newSlot = Slot(slotName)
+        self.slots.append(newSlot)
         return ""
 
     def __repr__(self):
@@ -142,15 +149,10 @@ class Utterance(Intent):
 class Slot(Utterance):
     def __init__(self, slotName):
         self.name = slotName
-        self.type = None
-        self.custom = False
+        self.type = ""
 
-    def declareType(self, slotType, customObj=None):
-        if customObj == None:
-            self.type = slotType
-        else:
-            self.custom = True
-            self.type = customObj
+    def declareType(self, slotType):
+        self.type = slotType
 
     def __repr__(self):
         return "{" + self.name + "}"
@@ -201,5 +203,3 @@ class SlotValue():
             return self.value
         else:
             return "value='" + self.value + "', synonyms=" + str(self.synonyms)
-#            return "value='{}', synonyms='{}'".format(self.value)\
-#                                            .format(self.synonyms)

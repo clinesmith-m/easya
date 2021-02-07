@@ -65,7 +65,10 @@ class Interface():
         self.promptMode = "addUtterance"
 
         while self.promptMode != "quit":
-            subprocess.run("clear")
+            #subprocess.run("clear")
+            print()
+            print()
+            print()
             if self.helpMsg != "":
                 print(self.helpMsg)
             else:
@@ -103,7 +106,6 @@ class Interface():
             elif self.promptMode == "chooseSlotName":
                 self.replaceSlotWord()
 
-            #FIXME: This doesn't advance to the next slot... ever.
             elif self.promptMode == "defaultSlotType":
                 if self.command == "custom":
                     self.promptMode = "nameCustomType"
@@ -128,7 +130,7 @@ class Interface():
                     self.promptMode = "enterVals"
                 else:
                     valIndex = len(self.customSlotTypes[self.currTypeIndex].values)-1
-                    enterSlotValSyn(valIndex)
+                    self.enterSlotValSyn(valIndex)
 
             else:
                 print("Mistakes were made")
@@ -169,8 +171,13 @@ class Interface():
                 self.output = self.errorMsg
 
         elif self.promptMode == "defaultSlotType":
-            self.output = "(This will keep running until every slot has a type)\n"
-            self.output += "The current slot is [{}]".format(self.currSlot)
+            if self.errorMsg == "":
+                self.output = "(This will keep running until every slot has a type)\n"
+                self.output += "The current slot is [{}]".format(self.currSlot)
+            else:
+                self.output = self.errorMsg + "\n"
+                self.output += "(This will keep running until every slot has a type)\n"
+                self.output += "The current slot is [{}]".format(self.currSlot)
 
         elif self.promptMode == "nameCustomType":
             self.output = "Creating a custom slot type..."
@@ -185,17 +192,20 @@ class Interface():
             else:
                 valString = ""
                 for val in self.customSlotTypes[self.currTypeIndex].values:
-                    valString += val.value + " ,"
-                valString = valString.strip(" ,")
+                    valString += val.value + ", "
+                valString = valString.strip(", ")
 
                 self.output += "Current values for type '{}' are: [{}]"\
                     .format(self.customSlotTypes[self.currTypeIndex].typeName,\
                     valString)
 
-
         elif self.promptMode == "enterSyn":
+            currCustVal = self.customSlotTypes[self.currTypeIndex].values[-1]
             self.output = "Entering synonym for '{}'"\
-            .format(self.customSlotTypes[self.currTypeIndex].values[-1].value)
+            .format(currCustVal.value)
+            if len(currCustVal.synonyms) > 0:
+                self.output += "\nCurrent synonyms are: "\
+                            + str(currCustVal.synonyms)
 
         else:
             self.output = "Under Construction"
@@ -245,7 +255,6 @@ class Interface():
 
         else:
             self.prompt = "Under Construction"
-            
 
 
     def addUtterances(self):
@@ -278,9 +287,10 @@ class Interface():
 
 
     def setCurrSlot(self):
+        self.currSlot = None
         intentSlots = self.intent.grabIntentSlots()
         for slot in intentSlots:
-            if slot.type == None:
+            if slot.type == "":
                 self.currSlot = slot
                 break
         # If currSlot is still none, it's time to exit the program
@@ -289,17 +299,12 @@ class Interface():
 
 
     def addDefaultType(self):
-        if self.promptMode == "defaultSlotType":
-            if self.command in self.activeSlotTypes \
-                            or self.command in self.customSlotTypes:
-                self.currSlot.declareType(self.command)
-                self.setCurrSlot()
-            else:
-                self.errorMsg = "'{}' is not a valid default slot type."\
-                                    .format(self.command)
-        else:
+        if self.command in self.activeSlotTypes:
             self.currSlot.declareType(self.command)
             self.setCurrSlot()
+        else:
+            self.errorMsg = "'{}' is not a valid default slot type."\
+                                .format(self.command)
 
 
     def addTypeName(self):
@@ -310,11 +315,17 @@ class Interface():
                 "Slot type names must only contain letters and underscores"
             return
 
+        # Adding the new type to activeSlotTypes in string form
+        self.activeSlotTypes.append(self.command)
+        # Then creating the new type
         newType = CustomSlotType(self.command)
         self.customSlotTypes.append(newType)
         self.currTypeIndex = len(self.customSlotTypes) - 1
         self.errorMsg = ""
         self.promptMode = "enterVals"
+        # Then setting the slot type
+        self.currSlot.declareType(self.command)
+        self.setCurrSlot()
 
 
     def listSlotTypes(self):
