@@ -138,6 +138,8 @@ class Interface():
                 break
 
             self.getIntentOutput()
+        pywriter = Pywriter(self.intent)
+        pywriter.write()
  
 
     def getIntentOutput(self):
