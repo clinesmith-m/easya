@@ -4,6 +4,7 @@ import re
 from sys import argv
 from intents.intents import Intent, Utterance, Slot, CustomSlotType, SlotValue
 from interface.intentInterface import Intenterface
+from interface.initInterface import Initerface
 from writers.pywriter import Pywriter
 
 class Interface():
