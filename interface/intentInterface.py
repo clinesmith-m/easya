@@ -222,7 +222,7 @@ class Intenterface():
     def addUtterances(self):
         # Reading and processing the input
         if self.intent.checkUtterance(self.command) != "":
-            self.errorMsg = self.intent.checkUtterance()
+            self.errorMsg = self.intent.checkUtterance(self.command)
         else:
             self.errorMsg = ""
             self.intent.addUtterance(self.command)
@@ -262,7 +262,7 @@ class Intenterface():
 
     def addDefaultType(self):
         if self.command in self.activeSlotTypes:
-            self.currSlot.declareType(self.command)
+            self.intent.declareType(self.currSlot, self.command)
             self.setCurrSlot()
         else:
             self.errorMsg = "'{}' is not a valid default slot type."\
@@ -286,7 +286,7 @@ class Intenterface():
         self.errorMsg = ""
         self.promptMode = "enterVals"
         # Then setting the slot type
-        self.currSlot.declareType(self.command)
+        self.intent.declareType(self.currSlot, self.command)
 
 
     def listSlotTypes(self):
@@ -313,13 +313,6 @@ class Intenterface():
         # Writing it this way to make it easier to add Amazon slot types as I
         # find out about them
         defaultSlotTypes = []
-        defaultSlotTypes.append("AMAZON.DATE")
-        defaultSlotTypes.append("AMAZON.DURATION")
-        defaultSlotTypes.append("AMAZON.FOUR_DIGIT_NUMBER")
-        defaultSlotTypes.append("AMAZON.NUMBER")
-        defaultSlotTypes.append("AMAZON.Ordinal")
-        defaultSlotTypes.append("AMAZON.PhoneNumber")
-        defaultSlotTypes.append("AMAZON.TIME")
         defaultSlotTypes.append("AMAZON.Actor")
         defaultSlotTypes.append("AMAZON.AdministrativeArea")
         defaultSlotTypes.append("AMAZON.AggregateRating")
@@ -337,15 +330,18 @@ class Intenterface():
         defaultSlotTypes.append("AMAZON.Corporation")
         defaultSlotTypes.append("AMAZON.Country")
         defaultSlotTypes.append("AMAZON.CreativeWorkType")
+        defaultSlotTypes.append("AMAZON.DATE")
         defaultSlotTypes.append("AMAZON.DayOfWeek")
         defaultSlotTypes.append("AMAZON.Dessert")
         defaultSlotTypes.append("AMAZON.DeviceType")
+        defaultSlotTypes.append("AMAZON.DURATION")
         defaultSlotTypes.append("AMAZON.EUROPE_CITY")
         defaultSlotTypes.append("AMAZON.EventType")
         defaultSlotTypes.append("AMAZON.FictionalCharacter")
         defaultSlotTypes.append("AMAZON.FirstName")
         defaultSlotTypes.append("AMAZON.Food")
         defaultSlotTypes.append("AMAZON.FoodEstablishment")
+        defaultSlotTypes.append("AMAZON.FOUR_DIGIT_NUMBER")
         defaultSlotTypes.append("AMAZON.Game")
         defaultSlotTypes.append("AMAZON.GB_CITY")
         defaultSlotTypes.append("AMAZON.Genre")
@@ -362,9 +358,12 @@ class Intenterface():
         defaultSlotTypes.append("AMAZON.MusicRecording")
         defaultSlotTypes.append("AMAZON.MusicVenue")
         defaultSlotTypes.append("AMAZON.MusicVideo")
+        defaultSlotTypes.append("AMAZON.NUMBER")
         defaultSlotTypes.append("AMAZON.Person")
+        defaultSlotTypes.append("AMAZON.PhoneNumber")
         defaultSlotTypes.append("AMAZON.PostalAddress")
         defaultSlotTypes.append("AMAZON.ProfessionalType")
+        defaultSlotTypes.append("AMAZON.Ordinal")
         defaultSlotTypes.append("AMAZON.RadioChannel")
         defaultSlotTypes.append("AMAZON.Room")
         defaultSlotTypes.append("AMAZON.SoftwareGame")
@@ -373,6 +372,7 @@ class Intenterface():
         defaultSlotTypes.append("AMAZON.StreetAddress")
         defaultSlotTypes.append("AMAZON.StreetName")
         defaultSlotTypes.append("AMAZON.TelevisionChannel")
+        defaultSlotTypes.append("AMAZON.TIME")
         defaultSlotTypes.append("AMAZON.TVSeries")
         defaultSlotTypes.append("AMAZON.US_CITY")
         defaultSlotTypes.append("AMAZON.US_FIRST_NAME")

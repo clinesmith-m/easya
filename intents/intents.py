@@ -2,6 +2,7 @@ class Intent():
     def __init__(self, name):
         self.intentName = name
         self.utterances = []
+        self.intentSlots = []
         self.currUtterance = None
 
     def changeIntentName(self, name):
@@ -75,8 +76,14 @@ class Intent():
         return ""
 
     def addUtterance(self, phrase):
-        newUtterance = Utterance(phrase)
-        self.utterances.append(newUtterance)
+        # One utterance can't have the same slot twice. This is a bit messy, but
+        # it's the easiest place to check for that
+        try:
+            newUtterance = Utterance(phrase, self)
+            self.intentSlots += newUtterance.grabSlots()
+            self.utterances.append(newUtterance)
+        except ValueError:
+            return "Utterance contains the same slot multiple times"
 
     # Modifies member varibales and returns an error string/empty string
     def setCurrUtterance(self, inputIndex):
@@ -90,23 +97,40 @@ class Intent():
         except:
             return "'" + inputIndex + "' is not a valid index number."
 
-    def grabIntentSlots(self):
-        allSlots = []
-        for utterance in self.utterances:
-            newSlots = utterance.grabSlots()
-            for slot in newSlots:
-                if slot not in allSlots:
-                    allSlots.append(slot)
+    def addIntentSlot(self, slotObj):
+        self.intentSlots.append(slotObj)
 
-        return allSlots
+    def grabIntentSlots(self):
+        slotnames = []
+        uniqueSlots = []
+        for slot in self.intentSlots:
+            if slot.name not in slotnames:
+                uniqueSlots.append(slot)
+                slotnames.append(slot.name)
+
+        return uniqueSlots
+
+    def __getSlotsWithName(self, targetName):
+        slotsWithName = []
+        for slot in self.intentSlots:
+            if slot.name == targetName:
+                slotsWithName.append(slot)
+
+        return slotsWithName
+
+    def declareType(self, slotObj, slotType):
+        sameNameSlots = self.__getSlotsWithName(slotObj.name)
+        for slot in sameNameSlots:
+            slot.declareType(slotType)
 
 
 class Utterance(Intent):
-    def __init__(self, phrase):
+    def __init__(self, phrase, parentIntent):
         self.phrase = phrase
-        self.initSlots()
+        self.parent = parentIntent
+        self.__initSlots()
 
-    def initSlots(self):
+    def __initSlots(self):
         self.slots = []
         for i in range(0, len(self.phrase), 1):
             if self.phrase[i] == "{":
@@ -116,7 +140,15 @@ class Utterance(Intent):
                 endSlot = i
                 newSlotName = self.phrase[beginSlot:endSlot]
                 newSlot = Slot(newSlotName)
+                # Erroring if the utterance already has a slot of the same name
+                for slot in self.slots:
+                    if slot.name == newSlotName:
+                        # This is a bit of a dirty way to handle this, but I
+                        # can't return an error string like I normally do in
+                        # easyA because this is only used in the constructor.
+                        raise ValueError
                 self.slots.append(newSlot)
+        return ""
 
     def grabSlots(self):
         return self.slots
@@ -134,13 +166,13 @@ class Utterance(Intent):
     def replaceWord(self, word, slotName):
         substitute = "{" + slotName + "}"
         self.phrase = self.phrase.replace(word, substitute)
-        # Erroring if the utterance already has a slot of the same name
-        for slot in self.slots:
-            if slot.name == slotName:
-                return "Utterance already contains an entry for slot '{}'"\
-                        .format(slotName)
         newSlot = Slot(slotName)
+        #FIXME: Change this back to the old error handling
+        for slot in self.slots:
+            if slot.name == newSlotName:
+                raise ValueError
         self.slots.append(newSlot)
+        self.parent.addIntentSlot(newSlot)
         return ""
 
     def __repr__(self):
