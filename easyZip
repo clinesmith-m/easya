@@ -1,0 +1,24 @@
+#!/bin/bash
+
+if [[ -e ".easya" ]]; then
+    if [[ -d "env" ]]; then
+        if [[ -d "../site-packages" ]]; then
+            echo "You already have site-packages directory in this project's parent directory."
+            echo "Please remove it before continuing"
+        else
+            if [[ -e "../skill.zip" ]]; then
+                rm ../skill.zip
+            fi
+            cp -r env/lib/python*/site-packages/ ../ &&
+            cp *.py ../site-packages/ &&
+            cp **/*.py ../site-packages/ &&
+            zip ../skill.zip ../site-packages > /dev/null &&
+            rm -rf ../site-packages
+            echo "Skill built and placed in \'../skill.zip\'"
+    else
+        echo "Could not find python virtualenv"
+        echo "[The environment must be stored in the \'env\' directory]"
+    fi
+else
+    echo "This directory is not an initialized easyA directory"    
+fi
