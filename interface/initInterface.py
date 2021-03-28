@@ -1,4 +1,4 @@
-class initerface():
+class Initerface():
     def __init__(self):
         pass
 

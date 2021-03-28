@@ -26,10 +26,7 @@ class Intenterface():
         self.promptMode = "addUtterance"
 
         while self.promptMode != "quit":
-            #subprocess.run("clear")
-            print()
-            print()
-            print()
+            subprocess.run("clear")
             if self.helpMsg != "":
                 print(self.helpMsg)
             else:
