@@ -42,7 +42,8 @@ class Interface():
 
 
     def runInit(self):
-        pass
+        initInterface = Initerface()
+        initInterface.run()
 
 
     def runAddIntent(self):

@@ -7,17 +7,20 @@ class JSONWriter():
         self.customTypes = customTypes
 
 
+    # This should only ever run when a new project is first created. It
+    # hardcodes a lot of things that will be problems at any other time
     def initWrite(self):
-        with open(self.skillname + "/en-US.json", "w") as f:
+        dirName = self.skillname.replace(" ", "-")
+        with open(dirName + "/en-US.json", "w") as f:
             f.write(self.initString())
 
 
     def writeIntent(self):
-        with open("en-US.json", r+) as f:
+        with open("en-US.json", "r+") as f:
             filedata = f.read()
             f.seek(0)
             f.truncate()
-            f.write(self.intentString(filedata)
+            f.write(self.intentString(filedata))
 
 
     def initString(self):

@@ -1,0 +1,7 @@
+#!/bin/bash
+
+NEW_DIR=${1// /-}
+mkdir $NEW_DIR
+cd $NEW_DIR
+touch .easya
+touch en-US.json
