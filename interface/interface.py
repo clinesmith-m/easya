@@ -1,17 +1,27 @@
 import os
 import subprocess
 import re
+from pathlib import *
 from sys import argv
 from intents.intents import Intent, Utterance, Slot, CustomSlotType, SlotValue
 from interface.intentInterface import Intenterface
 from interface.initInterface import Initerface
 from writers.pywriter import Pywriter
+from writers.JSONWriter import JSONWriter
 
 class Interface():
     def __init__(self):
         self.commands = [
-            "compile", "init", "add-intent", "update-intent", "help"
-            ]
+            "init", "add-intent", "update-intent", "help"
+        ]
+
+
+    def __checkForProj(self):
+        pathToCheck = Path(".easya")
+        if not pathToCheck.is_file():
+            print("This Directory is not a properly initialized easyA project")
+            print("(No '.easya' file exists)")
+            exit(1) 
 
 
     def run(self):
@@ -29,13 +39,13 @@ class Interface():
             print()
 
         # Passing valid commands to handler functions
-        if argv[1] == "compile":
-            subprocess.run("cmake")
-        elif argv[1] == "init":
+        if argv[1] == "init":
             self.runInit()
         elif argv[1] == "add-intent":
+            self.__checkForProj()
             self.runAddIntent()
         elif argv[1] == "update-intent":
+            self.__checkForProj()
             self.runUpdateIntent()
         elif argv[1] == "help":
             self.help()
@@ -51,6 +61,9 @@ class Interface():
         addIntentInterface.run()
         pywriter = Pywriter(addIntentInterface.intent)
         pywriter.write()
+        jsonwriter = JSONWriter(customTypes=addIntentInterface.customSlotTypes,
+                            intent=addIntentInterface.intent)
+        jsonwriter.writeIntent()
 
     def runUpdateIntent(self):
         pass

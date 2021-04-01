@@ -9,7 +9,7 @@ class JSONWriter():
 
     # This should only ever run when a new project is first created. It
     # hardcodes a lot of things that will be problems at any other time
-    def initWrite(self):
+    def writeInit(self):
         dirName = self.skillname.replace(" ", "-")
         with open(dirName + "/en-US.json", "w") as f:
             f.write(self.initString())
@@ -26,7 +26,7 @@ class JSONWriter():
     def initString(self):
         initStr = '{\n'
         initStr += '\t"interactionModel": {\n'
-        initStr += '\t\t"languageModel: {\n'
+        initStr += '\t\t"languageModel": {\n'
         initStr += '\t\t\t"invocationName": "' + self.skillname + '",\n'
         initStr += '\t\t\t"intents": [\n'
         initStr += '\t\t\t\t{\n'
@@ -44,15 +44,15 @@ class JSONWriter():
         initStr += '\t\t\t\t{\n'
         initStr += '\t\t\t\t\t"name": "AMAZON.NavigateHomeIntent",\n'
         initStr += '\t\t\t\t\t"samples": []\n'
-        initStr += '\t\t\t\t},\n'
+        initStr += '\t\t\t\t}\n'
         initStr += '\t\t\t],\n'
         initStr += '\t\t\t"types": [\n'
         initStr += '\t\t\t]\n'
         initStr += '\t\t},\n'
         initStr += '\t\t"dialog": {\n'
-        initStr += '\t\t},'
-        initStr += '\t\t"prompts": [\n'
-        initStr += '\t\t],'
+        initStr += '\t\t\t"prompts": [\n'
+        initStr += '\t\t\t]\n'
+        initStr += '\t\t}\n'
         initStr += '\t}\n'
         initStr += '}\n'
         return initStr
@@ -60,10 +60,14 @@ class JSONWriter():
 
     def intentString(self, jsonData):
         # Adding the intent
-        # Starting by finding the right spot in the file
+
+        # TODO: Implement this next
+        # Starting by finding the right spot in the file, which is just after
+        # the newline that comes before the square bracket that clsoes the
+        # 'intents' entry.
         markerStr1 = "AMAZON.NavigateHomeIntent"
         mark1 = jsonData.find(markerStr1)
-        markerStr2 = "},"
+        markerStr2 = "}"
         mark2 = jsonData.find(mark1, markerStr2)
         mark2 += 3 # Moves the index past the "},\n" on this line
         startOfFile = jsonData[:mark2]

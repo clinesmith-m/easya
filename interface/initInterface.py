@@ -7,9 +7,15 @@ class Initerface():
 
     def run(self):
         self.name = self.__getName()
-        subprocess.run(["easyA-init", self.name])
+        print("This may take a little while...")
+        try:
+            subprocess.run(["easyA-init", self.name], check=True)
+        except subprocess.CalledProcessError:
+            print("Cancelling initialization.")
+            exit(1)
         jwriter = JSONWriter(name=self.name)
-        jwriter.initWrite()
+        jwriter.writeInit()
+        print("Project created.")
 
 
     # This can be modified to do error checking. I think AVS has a couple

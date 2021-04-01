@@ -1,7 +1,9 @@
 #!/bin/bash
 
 NEW_DIR=${1// /-}
-mkdir $NEW_DIR
-cd $NEW_DIR
-touch .easya
+mkdir $NEW_DIR &&
+cd $NEW_DIR &&
+virtualenv -p python3 env >> /dev/null &&
+./env/bin/pip install ask-sdk >> /dev/null &&
+touch .easya &&
 touch en-US.json
