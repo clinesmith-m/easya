@@ -50,9 +50,11 @@ class JSONWriter():
         initStr += '\t\t\t]\n'
         initStr += '\t\t},\n'
         initStr += '\t\t"dialog": {\n'
-        initStr += '\t\t\t"prompts": [\n'
+        initStr += '\t\t\t"intents": [\n'
         initStr += '\t\t\t]\n'
-        initStr += '\t\t}\n'
+        initStr += '\t\t},\n'
+        initStr += '\t\t"prompts": [\n'
+        initStr += '\t\t]\n'
         initStr += '\t}\n'
         initStr += '}\n'
         return initStr
@@ -111,6 +113,11 @@ class JSONWriter():
                 index += 1
 
         return index
+
+
+    def __findDialogStart(self, jsonData):
+        searchStart = jsonData.find("\"dialog\": {\n")
+        index = jsonData.find("")
 
 
     def intentString(self, jsonData):
@@ -187,7 +194,9 @@ class JSONWriter():
                 typeStr += '\t\t\t\t}\n'
             jsonData = startOfFile + typeStr + endOfFile
 
-        #TODO: Once reprompts (etc.) are supported, they'll go here.
-        
+        # Currently hardcoding dialog to not ask for reprompts
+        # TODO: If I ever add support for this after capstone, this is where to
+        # start
+        dialogStart = self.__findDialogStart(jsonData)
 
         return jsonData
