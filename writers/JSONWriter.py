@@ -117,7 +117,36 @@ class JSONWriter():
 
     def __findDialogStart(self, jsonData):
         searchStart = jsonData.find("\"dialog\": {\n")
-        index = jsonData.find("")
+        index = jsonData.find("\"intents\": [\n", searchStart)
+        index += len("\"intents\": [\n")
+
+        # Checking if there are other intents already present. Iterating past
+        # them if there are.
+        itr = index
+        hasIntents = False
+        while jsonData[itr] != "]":
+            if jsonData[itr] == "{":
+                hasIntents = True
+                break
+            itr += 1
+
+        if not hasIntents:
+            return index
+
+        index = itr
+        layersDeep = 0
+        lastIntent = False
+        while not lastIntent:
+            if jsonData[index] == "{":
+                layersDeep += 1
+            elif jsonData[index] == "}":
+                layersDeep -= 1
+                if layersDeep == 0 and jsonData[index + 1] != ",":
+                    lastIntent = True
+
+            index += 1
+
+        return index
 
 
     def intentString(self, jsonData):
@@ -168,6 +197,7 @@ class JSONWriter():
             # comma added to it
             if startOfFile[-1] == "}":
                 startOfFile += ","
+                endOfFile = endOfFile[1:]
 
             typeStr = '\t\t\t\t{\n'
             for custType in self.customTypes:
@@ -198,5 +228,21 @@ class JSONWriter():
         # TODO: If I ever add support for this after capstone, this is where to
         # start
         dialogStart = self.__findDialogStart(jsonData)
+        startOfFile = jsonData[:dialogStart]
+        endOfFile = jsonData[dialogStart:]
+
+        if startOfFile[-1] == "}":
+            startOfFile += ",\n"
+            endOfFile = endOfFile[1:]
+
+        dialogStr = '\t\t\t\t{\n'
+        dialogStr += '\t\t\t\t\t"name": "' + self.intent.intentName + '",\n'
+        dialogStr += '\t\t\t\t\t"confirmationRequired": false,\n'
+        dialogStr += '\t\t\t\t\t"prompts": {},\n'
+        dialogStr += '\t\t\t\t\t"slots": [\n'
+        dialogStr += '\t\t\t\t\t]\n'
+        dialogStr += '\t\t\t\t}\n'
+
+        jsonData = startOfFile + dialogStr + endOfFile
 
         return jsonData
