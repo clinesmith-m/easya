@@ -12,7 +12,7 @@ from writers.JSONWriter import JSONWriter
 class Interface():
     def __init__(self):
         self.commands = [
-            "init", "add-intent", "update-intent", "help"
+            "init", "add-intent", "update-intent", "help", "zip"
         ]
 
 
@@ -47,6 +47,8 @@ class Interface():
         elif argv[1] == "update-intent":
             self.__checkForProj()
             self.runUpdateIntent()
+        elif argv[1] == "zip":
+            subprocess.run("easyZip")
         elif argv[1] == "help":
             self.help()
 

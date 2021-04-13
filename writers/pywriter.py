@@ -36,7 +36,7 @@ class Pywriter():
 
         intentClassName = self.intent.intentName + "Handler"
         pyIntent = "class " + intentClassName
-        pyIntent += "(AbstractRquestHandler):\n"
+        pyIntent += "(AbstractRequestHandler):\n"
 
         # Adding the always-repeated can_handle function
         pyIntent += "\tdef can_handle(self, handler_input):\n"
