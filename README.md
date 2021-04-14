@@ -3,7 +3,7 @@
 A suite of workflow management and development tools designed to enable easier Amazon Alexa development. This is designed to be run in a programmers development environment with testing taking place through AWS Lambda.
 
 ## Prerequisites
-You must already have `make`, `python3` and python `virtualenv` installed. For full functionality, you will also need to be able to run this code from within a `bash` shell. You will also need your own AWS account.
+You must already have `make`, `python3` and python `virtualenv` installed. For full functionality, you will also need to be able to run this code from within a `bash` shell. Finally, you'll need your own AWS account.
 
 ## Setup
 Clone this repository into the directory of your choice. Then enter that directory and run `make`. This will install all of the necessary executables. You also have the option to specify what directory these install in by running `make INSTALL_DIR=<YOUR_DIR>`. By default, they will install in `${HOME}/bin`.
