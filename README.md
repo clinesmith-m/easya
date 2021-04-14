@@ -38,7 +38,7 @@ easyA is for sizable hobby projects. If you want to make an alexa skill that isn
 This also isn't the option if you're making a particularly ambitious Alexa project, as it has several limitations, which I detail in the next section.
 
 ## Current limitations
-The two main features that I don't currently support, but would like to, is multi-turn dialogue, which is a pretty core feature of the Alexa that will take serious augmentation of the `add-intent` interface and the JSON code I generate, and the ability to write your code in multiple python files which you import into main.py, which will require and upgrade of the `easyZip` script, along with additional testing to make sure AWS Lambda can still process the resulting zip file. I currently have no timetable for implementing these changes, but if you're using easyA and those augmentations would be beneficial to you, reach out to me and I can give you a better idea of when they might be done.
+The two main features that I don't currently support, but would like to, is multi-turn dialogue, which is, admittedly, a pretty core feature of the Alexa. You also can't spread your code out in multiple python files. Everything you write, for now, must be included in main.py. I currently have no timetable for implementing these changes, but if you're using easyA and those augmentations would be beneficial to you, reach out to me and I can give you a better idea of when they might be done.
 
 ## Reporting issues
 If you encounter any problems with easyA, or know of functionality that would be helpful to implement, open an issue in this github repository and I will take a look at it.
