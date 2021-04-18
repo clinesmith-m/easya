@@ -13,13 +13,13 @@ class Pywriter():
         if not mainfile.exists():
             with open("main.py", "w") as f:
                 initStr = self.openInitString()
+                initStr += self.closeInitString()
                 f.write(initStr)
             # This double open is ugly and inefficient, but it greatly
             # simplifies the addNewIntent code, so it'll probably stay
             with open("main.py", "w") as f:
                 if self.intent != None:
                     f.write(self.addNewIntent(initStr))
-                f.write(self.closeInitString())
         else:
             with open("main.py", "r+") as f:
                 filedata = f.read()
@@ -28,11 +28,11 @@ class Pywriter():
                 f.write(self.addNewIntent(filedata))
 
 
-    def addNewIntent(self, pyFileData):
+    def addNewIntent(self, pyData):
         markerStr = "# PLEASE DO NOT REMOVE OR MODIFY THIS COMMENT."
-        markerIndex = pyFileData.find(markerStr)
-        startOfFile = pyFileData[:markerIndex]
-        endOfFile = pyFileData[markerIndex:]
+        markerIndex = pyData.find(markerStr)
+        startOfFile = pyData[:markerIndex]
+        endOfFile = pyData[markerIndex:]
 
         intentClassName = self.intent.intentName + "Handler"
         pyIntent = "class " + intentClassName
@@ -63,8 +63,18 @@ class Pywriter():
         pyIntent += "\t\t\t)\n"
         pyIntent += "\n"
 
-        fullFileData = startOfFile + pyIntent + endOfFile
-        return(fullFileData)
+        pyData = startOfFile + pyIntent + endOfFile
+
+        # Now adding the handler to the bottom
+        markerStr = "sb.add_request_handler(HelpIntentHandler())"
+        markerIndex = pyData.find(markerStr)
+        startOfFile = pyData[:markerIndex]
+        endOfFile = pyData[markerIndex:]
+
+        pyIntent = "sb.add_request_handler({}())\n".format(intentClassName)
+        pyData = startOfFile + pyIntent + endOfFile
+
+        return pyData
 
 
     def openInitString(self):
@@ -142,7 +152,7 @@ class Pywriter():
         closeInit += "class SessionEndedRequestHandler(AbstractRequestHandler):\n"
         closeInit += "\t# Handles the session end\n"
         closeInit += "\tdef can_handle(self, handler_input):\n"
-        closeInit += "\t\treturn ask_utils.is_request_type(\"SessionEndedRequest\")(handler_input)\n"
+        closeInit += "\treturn ask_utils.is_request_type(\"SessionEndedRequest\")(handler_input)\n"
         closeInit += "\n"
         closeInit += "\tdef handle(self, handler_input):\n"
         closeInit += "\n"
@@ -206,9 +216,6 @@ class Pywriter():
         closeInit += "\n"
         closeInit += "sb.add_request_handler(LaunchRequestHandler())\n"
         closeInit += "# User intents are added here\n"
-        if self.intent != None:
-            closeInit += "sb.add_request_handler({}Handler())\n"\
-                            .format(self.intent.intentName)
         closeInit += "sb.add_request_handler(HelpIntentHandler())\n"
         closeInit += "sb.add_request_handler(CancelOrStopIntentHandler())\n"
         closeInit += "sb.add_request_handler(SessionEndedRequestHandler())\n"
