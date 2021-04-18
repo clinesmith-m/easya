@@ -152,7 +152,7 @@ class Pywriter():
         closeInit += "class SessionEndedRequestHandler(AbstractRequestHandler):\n"
         closeInit += "\t# Handles the session end\n"
         closeInit += "\tdef can_handle(self, handler_input):\n"
-        closeInit += "\treturn ask_utils.is_request_type(\"SessionEndedRequest\")(handler_input)\n"
+        closeInit += "\t\treturn ask_utils.is_request_type(\"SessionEndedRequest\")(handler_input)\n"
         closeInit += "\n"
         closeInit += "\tdef handle(self, handler_input):\n"
         closeInit += "\n"
